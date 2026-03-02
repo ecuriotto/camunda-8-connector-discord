@@ -1,187 +1,141 @@
-> A Connector template for new C8 outbound connector
->
-> To use this template update the following resources to match the name of your connector:
->
-> * [README](./README.md) (title, description)
-> * [POM](./pom.xml) (artifact name, id, description)
-> * [Connector](src/main/java/io/camunda/example/MyConnector.java) (rename, implement, update
-    `OutboundConnector` annotation)
-> * [Service Provider Interface (SPI)](./src/main/resources/META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorProvider) (
-    adapt to your connector class)
-> * [Element Template](./element-templates/my-connector.json) (will be generated during build)
->
-> about [creating Connectors](https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/#creating-a-custom-connector)
->
-> Check out the [Connectors SDK](https://github.com/camunda/connectors)
+# Camunda 8 Discord Connector
 
-# Connector Template
+A [Camunda 8 Outbound Connector](https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/) that integrates Discord into BPMN processes. Send messages, manage channels, and control roles directly from your process diagrams.
 
-Camunda Outbound Connector Template
+## Supported Operations
 
-This repository provides a template for creating a Camunda Outbound Connector using the Connector SDK. 
-The example is using the annotations-based approach that allows to define multiple operations within a single Connector.
+### 1. Send Message (Bot)
 
-## Operations API - `OutboundConnectorProvider`
+Send a message to a Discord channel using a bot token.
 
-Example implementation: [`io.camunda.example.MyConnector`](src/main/java/io/camunda/example/MyConnector.java).
+| Input      | Type   | Required | Description                                           |
+|------------|--------|----------|-------------------------------------------------------|
+| `channelId`| String | Yes      | The Discord channel ID                                |
+| `content`  | String | No*      | Plain text message content                            |
+| `embeds`   | JSON   | No*      | Array of embed objects (FEEL expression)              |
+| `botToken` | String | Yes      | Bot token — use `{{secrets.DISCORD_BOT_TOKEN}}`       |
 
-This example leverages the `@Operation` annotation to define multiple operations within a single Connector class. 
-The example defines two operations - `echo` and `addTwoNumbers` - each represented by a method annotated with `@Operation`.
-Each operation method accepts an input parameter annotated with `@Variable` (or `@Header`) and returns an output object.
+*At least one of `content` or `embeds` must be provided.
 
-The runtime uses the `OutboundConnectorProvider` interface to discover and instantiate the Connector. If you rename your
-Connector class, make sure to update the corresponding entry in the `META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorProvider` file.
+**Output:** `messageId`, `channelId`, `timestamp`
 
-Another example implementation for an annotations-based Connector is the [CSV Connector](https://github.com/camunda/connectors/blob/main/connectors/csv/src/main/java/io/camunda/connector/csv/CsvConnector.java).
+### 2. Send Webhook Message
+
+Send a message via a Discord webhook URL (no bot required).
+
+| Input       | Type   | Required | Description                                            |
+|-------------|--------|----------|--------------------------------------------------------|
+| `webhookUrl`| String | Yes      | Full webhook URL — use `{{secrets.DISCORD_WEBHOOK_URL}}`|
+| `content`   | String | No*      | Plain text message content                             |
+| `username`  | String | No       | Override the webhook's default username                 |
+| `avatarUrl` | String | No       | Override the webhook's default avatar                   |
+| `embeds`    | JSON   | No*      | Array of embed objects (FEEL expression)               |
+
+*At least one of `content` or `embeds` must be provided.
+
+**Output:** `success` (boolean)
+
+### 3. Create Channel
+
+Create a new channel in a Discord guild (server).
+
+| Input         | Type     | Required | Description                                       |
+|---------------|----------|----------|---------------------------------------------------|
+| `guildId`     | String   | Yes      | The guild (server) ID                             |
+| `channelName` | String   | Yes      | Name for the new channel                          |
+| `channelType` | Dropdown | No       | Text (default), Voice, or Announcement            |
+| `topic`       | String   | No       | Channel topic/description                         |
+| `botToken`    | String   | Yes      | Bot token — use `{{secrets.DISCORD_BOT_TOKEN}}`   |
+
+**Output:** `channelId`, `channelName`, `channelType`
+
+### 4. Manage Roles
+
+Add or remove a role from a guild member.
+
+| Input      | Type     | Required | Description                                       |
+|------------|----------|----------|---------------------------------------------------|
+| `guildId`  | String   | Yes      | The guild (server) ID                             |
+| `userId`   | String   | Yes      | The target user ID                                |
+| `roleId`   | String   | Yes      | The role ID to add or remove                      |
+| `action`   | Dropdown | No       | Add (default) or Remove                           |
+| `botToken` | String   | Yes      | Bot token — use `{{secrets.DISCORD_BOT_TOKEN}}`   |
+
+**Output:** `success`, `action`, `userId`, `roleId`
+
+## Error Codes
+
+| Code                      | Description                                  |
+|---------------------------|----------------------------------------------|
+| `CHANNEL_NOT_FOUND`       | The specified channel does not exist          |
+| `GUILD_NOT_FOUND`         | The specified guild does not exist            |
+| `MEMBER_OR_ROLE_NOT_FOUND`| The member or role was not found in the guild |
+| `MISSING_PERMISSIONS`     | Bot lacks required permissions                |
+| `INVALID_WEBHOOK_URL`     | Webhook URL is invalid or expired             |
+| `AUTHENTICATION_FAILED`   | Bot token is invalid or missing               |
+| `RATE_LIMITED`             | Discord rate limit hit (retryable)            |
+| `DISCORD_API_ERROR`       | General Discord API error                     |
+
+## Configuration
+
+### Discord Bot Setup
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new Application and add a Bot user
+3. Copy the bot token
+4. Invite the bot to your server with appropriate permissions (Send Messages, Manage Channels, Manage Roles)
+
+### Camunda Secrets
+
+Store sensitive values as [Camunda secrets](https://docs.camunda.io/docs/components/console/manage-clusters/manage-secrets/):
+
+- `DISCORD_BOT_TOKEN` — Your Discord bot token
+- `DISCORD_WEBHOOK_URL` — Your Discord webhook URL (for webhook operations)
+
+Reference them in the connector as `{{secrets.DISCORD_BOT_TOKEN}}` and `{{secrets.DISCORD_WEBHOOK_URL}}`.
 
 ## Build
 
-You can package the Connector by running the following command:
-
 ```bash
+# Build and generate element template
 mvn clean package
-```
 
-This will create the following artifacts:
-
-- A thin JAR without dependencies.
-- A fat JAR containing all dependencies, potentially shaded to avoid classpath conflicts. This will not include the SDK
-  artifacts since those are in scope `provided` and will be brought along by the respective Connector Runtime executing
-  the Connector.
-
-### Shading dependencies
-
-You can use the `maven-shade-plugin` defined in the [Maven configuration](./pom.xml) to relocate common dependencies
-that are used in other Connectors and
-the [Connector Runtime](https://github.com/camunda/connectors).
-This helps to avoid classpath conflicts when the Connector is executed.
-
-
-For example, without shading, you might encounter errors like:
-```
-java.lang.NoSuchMethodError: com.fasterxml.jackson.databind.ObjectMapper.setserializationInclusion(Lcom/fasterxml/jackson/annotation/JsonInclude$Include;)Lcom/fasterxml/jackson/databind/ObjectMapper;
-```
-This occurs when your connector and the runtime use different versions of the same library (e.g., Jackson).
-
-Use the `relocations` configuration in the Maven Shade plugin to define the dependencies that should be shaded.
-The [Maven Shade documentation](https://maven.apache.org/plugins/maven-shade-plugin/examples/class-relocation.html)
-provides more details on relocations.
-
-## API
-
-### Input
-
-| Name    | Description      | Example           | Notes                                                                      |
-|---------|------------------|-------------------|----------------------------------------------------------------------------|
-| user    | Mock username    | `alice`           | Has no effect on the function call outcome.                                |
-| token   | Mock token value | `my-secret-token` | Has no effect on the function call outcome.                                |
-| message | Mock message     | `Hello World`     | Echoed back in the output. If starts with 'fail', an error will be thrown. |
-
-### Output
-
-```json
-{
-  "result":{
-    "myProperty":"Message received: ..."
-  }
-}
-```
-
-### Error codes
-
-| Code | Description                                |
-|------|--------------------------------------------|
-| FAIL | Message starts with 'fail' (ignoring case) |
-
-## Test locally
-
-Run unit tests
-
-```bash
+# Run tests only
 mvn clean verify
 ```
 
-## Testing
-### Unit and Integration Tests
+The generated element template is located at [`element-templates/discord-connector.json`](./element-templates/discord-connector.json).
 
-You can run the unit and integration tests by executing the following Maven command:
-```bash
-mvn clean verify
-```
+## Deployment
 
-### Local environment
+### Self-Managed
 
-#### Prerequisites
-You will need the following tools installed on your machine:
-1. Camunda Modeler, which is available in two variants:
-    - [Desktop Modeler](https://camunda.com/download/modeler/) for a local installation.
-    - [Web Modeler](https://modeler.camunda.io/) for an online experience.
+1. Build the connector JAR: `mvn clean package`
+2. Deploy the fat JAR (with dependencies) to your Connector Runtime
+3. Import the element template into Camunda Modeler
 
-2. [Docker](https://www.docker.com/products/docker-desktop), which is required to run the Camunda platform.
+### SaaS
 
-#### Setting Up the Camunda platform
+1. Build the connector JAR: `mvn clean package`
+2. Upload the element template to Web Modeler and publish it
+3. Deploy the connector to your SaaS environment
 
-The Connectors Runtime requires a running Camunda platform to interact with. To set up a local Camunda environment, follow these steps:
+### Local Development
 
-1. Clone the [Camunda distributions repository](https://github.com/camunda/camunda-distributions) from GitHub and navigate to the Camunda 8.8 docker-compose directory:
+1. Start a local Camunda environment (e.g., via [Docker Compose](https://github.com/camunda/camunda-distributions))
+2. Run `io.camunda.connector.discord.LocalConnectorRuntime` from the test sources
+3. Add the element template to your Modeler configuration
 
-```shell
-git clone git@github.com:camunda/camunda-distributions.git
-cd cd docker-compose/versions/camunda-8.8
-```
+## Technology Stack
 
-**Note:** This template is compatible with Camunda 8.8. Using other versions may lead to compatibility issues.
+- Java 21
+- Camunda Connector SDK 8.8
+- Discord REST API v10
+- `java.net.http.HttpClient` (no third-party HTTP libraries)
+- Jackson for JSON processing
+- JUnit 5 + Mockito + AssertJ for testing
 
-Either comment out the connectors service, or use the `--scale` flag to exclude it:
+## License
 
-```shell
-docker compose -f docker-compose-core.yaml up --scale connectors=0
-```
+[Apache License 2.0](./LICENSE)
 
-#### Configure the Desktop Modeler and Use Your Connector
-
-Add the `element-templates/my-connector.json` to your Modeler configuration as per
-the [Element Templates documentation](https://docs.camunda.io/docs/components/modeler/desktop-modeler/element-templates/configuring-templates/).
-
-#### Using Your Connector
-Then, to use your connector in a local Camunda environment, follow these steps:
-
-1. Run the [`io.camunda.example.LocalConnectorRuntime`](src/test/java/io/camunda/example/LocalConnectorRuntime.java) to start your connector for testing purposes.
-2. Open the Camunda Desktop Modeler and create a new BPMN diagram.
-3. Design a process that incorporates your newly created connector.
-4. Deploy the process to your local Camunda platform.
-5. Verify that the process is running smoothly by accessing Camunda Operate at [localhost:8088/operate](http://localhost:8088/operate). Username and password are both `demo`.
-
-### SaaS environment
-
-#### Creating an API Client
-
-The Connectors Runtime (LocalConnectorRuntime) requires connection details to interact with your Camunda SaaS cluster. To set this up, follow these steps:
-
-1. Navigate to Camunda [SaaS](https://console.camunda.io).
-2. Create a cluster using the latest version available.
-3. Select your cluster, then go to the `API` section and click `Create new Client`.
-4. Ensure the `zeebe` checkbox is selected, then click `Create`.
-5. Copy the configuration details displayed under the `Spring Boot` tab.
-6. Paste the copied configuration into your `application.properties` file within your project.
-
-#### Using Your Connector
-
-1. Start your connector by executing `io.camunda.example.LocalConnectorRuntime` in your development
-   environment.
-2. Access the Web Modeler and create a new project.
-3. Click on `Create new`, then select `Upload files`. Upload the connector template from the repository you have.
-4. After uploading, **publish the connector template** by clicking the Publish button.
-5. In the same folder, create a new BPMN diagram.
-6. Design and start a process that incorporates your new connector.
-
-## Element Template
-
-The element template for this sample connector is generated automatically based on the connector
-input class using
-the [Element Template Generator](https://github.com/camunda/connectors/tree/main/element-template-generator/core).
-
-The generation is embedded in the Maven build and can be triggered by running `mvn clean package`.
-
-The generated element template can be found
-in [element-templates/my-connector.json](./element-templates/my-connector.json).

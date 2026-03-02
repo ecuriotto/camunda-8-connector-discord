@@ -7,4 +7,5 @@ package io.camunda.connector.discord.model.response;
  * @param channelName the name of the created channel
  * @param channelType the numeric type of the created channel
  */
-public record ChannelResponse(String channelId, String channelName, int channelType) {}
+public record ChannelResponse(String channelId, String channelName, int channelType) {
+}

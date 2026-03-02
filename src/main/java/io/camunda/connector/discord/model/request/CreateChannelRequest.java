@@ -8,7 +8,8 @@ import jakarta.validation.constraints.NotEmpty;
 /**
  * Input model for the {@code createChannel} operation.
  *
- * <p>Creates a new channel in a Discord guild (server).
+ * <p>
+ * Creates a new channel in a Discord guild (server).
  *
  * @param guildId     the target guild (server) ID
  * @param channelName the name for the new channel
@@ -17,56 +18,32 @@ import jakarta.validation.constraints.NotEmpty;
  * @param botToken    the Discord bot token for authentication
  */
 public record CreateChannelRequest(
-    @NotEmpty
-    @TemplateProperty(
-        group = "channel",
-        label = "Guild ID",
-        description = "The ID of the Discord guild (server) to create the channel in")
-    String guildId,
+        @NotEmpty @TemplateProperty(group = "channel", label = "Guild ID", description = "The ID of the Discord guild (server) to create the channel in") String guildId,
 
-    @NotEmpty
-    @TemplateProperty(
-        group = "channel",
-        label = "Channel Name",
-        description = "Name for the new channel")
-    String channelName,
+        @NotEmpty @TemplateProperty(group = "channel", label = "Channel Name", description = "Name for the new channel") String channelName,
 
-    @TemplateProperty(
-        group = "channel",
-        label = "Channel Type",
-        description = "The type of channel to create",
-        type = PropertyType.Dropdown,
-        defaultValue = "0",
-        choices = {
-          @DropdownPropertyChoice(value = "0", label = "Text"),
-          @DropdownPropertyChoice(value = "2", label = "Voice"),
-          @DropdownPropertyChoice(value = "5", label = "Announcement")
-        })
-    String channelType,
+        @TemplateProperty(group = "channel", label = "Channel Type", description = "The type of channel to create", type = PropertyType.Dropdown, defaultValue = "0", choices = {
+                @DropdownPropertyChoice(value = "0", label = "Text"),
+                @DropdownPropertyChoice(value = "2", label = "Voice"),
+                @DropdownPropertyChoice(value = "5", label = "Announcement")
+        }) String channelType,
 
-    @TemplateProperty(
-        group = "channel",
-        label = "Topic",
-        description = "Channel topic or description (optional)",
-        optional = true)
-    String topic,
+        @TemplateProperty(group = "channel", label = "Topic", description = "Channel topic or description (optional)", optional = true) String topic,
 
-    @NotEmpty
-    @TemplateProperty(
-        group = "authentication",
-        label = "Bot Token",
-        description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.")
-    String botToken) {
+        @NotEmpty @TemplateProperty(group = "authentication", label = "Bot Token", description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.") String botToken) {
 
-  /** Returns the numeric channel type, defaulting to 0 (Text) if not set or invalid. */
-  public int channelTypeAsInt() {
-    if (channelType == null || channelType.isBlank()) {
-      return 0;
+    /**
+     * Returns the numeric channel type, defaulting to 0 (Text) if not set or
+     * invalid.
+     */
+    public int channelTypeAsInt() {
+        if (channelType == null || channelType.isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(channelType);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
-    try {
-      return Integer.parseInt(channelType);
-    } catch (NumberFormatException e) {
-      return 0;
-    }
-  }
 }

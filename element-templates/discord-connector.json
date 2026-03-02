@@ -1,0 +1,567 @@
+{
+  "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name" : "Discord Connector",
+  "id" : "io.camunda.connector.discord.v1",
+  "description" : "Send messages and manage channels in Discord",
+  "metadata" : {
+    "keywords" : [ ]
+  },
+  "documentationRef" : "https://github.com/camunda/camunda-8-connector-discord",
+  "version" : 1,
+  "category" : {
+    "id" : "connectors",
+    "name" : "Connectors"
+  },
+  "appliesTo" : [ "bpmn:Task" ],
+  "elementType" : {
+    "value" : "bpmn:ServiceTask"
+  },
+  "groups" : [ {
+    "id" : "authentication",
+    "label" : "Authentication"
+  }, {
+    "id" : "message",
+    "label" : "Message"
+  }, {
+    "id" : "channel",
+    "label" : "Channel"
+  }, {
+    "id" : "role",
+    "label" : "Role Management"
+  }, {
+    "id" : "operation",
+    "label" : "Operation"
+  }, {
+    "id" : "connector",
+    "label" : "Connector"
+  }, {
+    "id" : "output",
+    "label" : "Output mapping"
+  }, {
+    "id" : "error",
+    "label" : "Error handling"
+  }, {
+    "id" : "retries",
+    "label" : "Retries"
+  } ],
+  "properties" : [ {
+    "value" : "io.camunda:discord:1",
+    "binding" : {
+      "property" : "type",
+      "type" : "zeebe:taskDefinition"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "createChannel:botToken",
+    "label" : "Bot Token",
+    "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "authentication",
+    "binding" : {
+      "name" : "botToken",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "createChannel",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "manageRoles:botToken",
+    "label" : "Bot Token",
+    "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "authentication",
+    "binding" : {
+      "name" : "botToken",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "manageRoles",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendMessage:botToken",
+    "label" : "Bot Token",
+    "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "authentication",
+    "binding" : {
+      "name" : "botToken",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendWebhookMessage:webhookUrl",
+    "label" : "Webhook URL",
+    "description" : "Discord webhook URL. Use {{secrets.DISCORD_WEBHOOK_URL}}.",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "authentication",
+    "binding" : {
+      "name" : "webhookUrl",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendWebhookMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendMessage:channelId",
+    "label" : "Channel ID",
+    "description" : "The ID of the Discord channel to send the message to",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "channelId",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendMessage:content",
+    "label" : "Message Content",
+    "description" : "Plain text message content. At least one of content or embeds must be provided.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "content",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendMessage:embeds",
+    "label" : "Embeds",
+    "description" : "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "embeds",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Text"
+  }, {
+    "id" : "sendWebhookMessage:content",
+    "label" : "Message Content",
+    "description" : "Plain text message content. At least one of content or embeds must be provided.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "content",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendWebhookMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendWebhookMessage:username",
+    "label" : "Username",
+    "description" : "Override the webhook's default username (optional).",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "username",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendWebhookMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendWebhookMessage:avatarUrl",
+    "label" : "Avatar URL",
+    "description" : "Override the webhook's default avatar (optional).",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "avatarUrl",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendWebhookMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "sendWebhookMessage:embeds",
+    "label" : "Embeds",
+    "description" : "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "message",
+    "binding" : {
+      "name" : "embeds",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "sendWebhookMessage",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Text"
+  }, {
+    "id" : "createChannel:guildId",
+    "label" : "Guild ID",
+    "description" : "The ID of the Discord guild (server) to create the channel in",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "channel",
+    "binding" : {
+      "name" : "guildId",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "createChannel",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "createChannel:channelName",
+    "label" : "Channel Name",
+    "description" : "Name for the new channel",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "channel",
+    "binding" : {
+      "name" : "channelName",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "createChannel",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "createChannel:channelType",
+    "label" : "Channel Type",
+    "description" : "The type of channel to create",
+    "optional" : false,
+    "value" : "0",
+    "group" : "channel",
+    "binding" : {
+      "name" : "channelType",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "createChannel",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Text",
+      "value" : "0"
+    }, {
+      "name" : "Voice",
+      "value" : "2"
+    }, {
+      "name" : "Announcement",
+      "value" : "5"
+    } ]
+  }, {
+    "id" : "createChannel:topic",
+    "label" : "Topic",
+    "description" : "Channel topic or description (optional)",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "channel",
+    "binding" : {
+      "name" : "topic",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "createChannel",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "manageRoles:guildId",
+    "label" : "Guild ID",
+    "description" : "The ID of the Discord guild (server)",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "role",
+    "binding" : {
+      "name" : "guildId",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "manageRoles",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "manageRoles:userId",
+    "label" : "User ID",
+    "description" : "The ID of the guild member",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "role",
+    "binding" : {
+      "name" : "userId",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "manageRoles",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "manageRoles:roleId",
+    "label" : "Role ID",
+    "description" : "The ID of the role to add or remove",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "role",
+    "binding" : {
+      "name" : "roleId",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "manageRoles",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "String"
+  }, {
+    "id" : "manageRoles:action",
+    "label" : "Action",
+    "description" : "Whether to add or remove the role",
+    "optional" : false,
+    "value" : "Add",
+    "group" : "role",
+    "binding" : {
+      "name" : "action",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "manageRoles",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Add",
+      "value" : "Add"
+    }, {
+      "name" : "Remove",
+      "value" : "Remove"
+    } ]
+  }, {
+    "id" : "operation",
+    "label" : "Operation",
+    "description" : "The operation to execute",
+    "value" : "createChannel",
+    "group" : "operation",
+    "binding" : {
+      "key" : "operation",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Create channel",
+      "value" : "createChannel"
+    }, {
+      "name" : "Manage roles",
+      "value" : "manageRoles"
+    }, {
+      "name" : "Send message",
+      "value" : "sendMessage"
+    }, {
+      "name" : "Send webhook message",
+      "value" : "sendWebhookMessage"
+    } ]
+  }, {
+    "id" : "version",
+    "label" : "Version",
+    "description" : "Version of the element template",
+    "value" : "1",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateVersion",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "id",
+    "label" : "ID",
+    "description" : "ID of the element template",
+    "value" : "io.camunda.connector.discord.v1",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateId",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "resultVariable",
+    "label" : "Result variable",
+    "description" : "Name of variable to store the response in",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultVariable",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultExpression",
+    "label" : "Result expression",
+    "description" : "Expression to map the response into process variables",
+    "feel" : "required",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "errorExpression",
+    "label" : "Error expression",
+    "description" : "Expression to handle errors. Details in the <a href=\"https://docs.camunda.io/docs/components/connectors/use-connectors/\" target=\"_blank\">documentation</a>.",
+    "feel" : "required",
+    "group" : "error",
+    "binding" : {
+      "key" : "errorExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "retryCount",
+    "label" : "Retries",
+    "description" : "Number of retries",
+    "value" : "3",
+    "feel" : "optional",
+    "group" : "retries",
+    "binding" : {
+      "property" : "retries",
+      "type" : "zeebe:taskDefinition"
+    },
+    "type" : "String"
+  }, {
+    "id" : "retryBackoff",
+    "label" : "Retry backoff",
+    "description" : "ISO-8601 duration to wait between retries",
+    "value" : "PT0S",
+    "group" : "retries",
+    "binding" : {
+      "key" : "retryBackoff",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  } ],
+  "icon" : {
+    "contents" : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDEyNy4xNCA5Ni4zNiI+PHRpdGxlPkRpc2NvcmQ8L3RpdGxlPjxwYXRoIGZpbGw9IiM1ODY1RjIiIGQ9Ik0xMDcuNyA4LjA3QTEwNS4xNSAxMDUuMTUgMCAwIDAgODEuNDcgMGE3Mi4wNiA3Mi4wNiAwIDAgMC0zLjM2IDYuODMgOTcuNjggOTcuNjggMCAwIDAtMjkuMTEgMEE3Mi4zNyA3Mi4zNyAwIDAgMCA0NS42NCAwIDEwNS44OSAxMDUuODkgMCAwIDAgMTkuMzkgOC4wOUMyLjc5IDMyLjY1LTEuNzEgNTYuNi41NCA4MC4yMWExMDUuNzMgMTA1LjczIDAgMCAwIDMyLjE3IDE2LjE1IDc3LjcgNzcuNyAwIDAgMCA2Ljg5LTExLjExIDY4LjQyIDY4LjQyIDAgMCAxLTEwLjg1LTUuMThjLjkxLS42NiAxLjgtMS4zNCAyLjY2LTJhNzUuNTcgNzUuNTcgMCAwIDAgNjQuMzIgMGMuODcuNzEgMS43NiAxLjM5IDIuNjYgMmE2OC42OCA2OC42OCAwIDAgMS0xMC44NyA1LjE5IDc3IDc3IDAgMCAwIDYuODkgMTEuMSAxMDUuMjUgMTA1LjI1IDAgMCAwIDMyLjE5LTE2LjE0YzIuNjQtMjcuMzgtNC41MS01MS4xMS0xOC45LTcyLjE1Wk00Mi40NSA2NS42OUMzNi4xOCA2NS42OSAzMSA2MCAzMSA1My4wNXM1LTEyLjY4IDExLjQzLTEyLjY4UzUzLjg5IDQ2IDUzLjg4IDUzLjA1IDQ4Ljg0IDY1LjY5IDQyLjQ1IDY1LjY5Wm00Mi4yNCAwQzc4LjQxIDY1LjY5IDczLjI1IDYwIDczLjI1IDUzLjA1czUtMTIuNjggMTEuNDQtMTIuNjhTOTYuMjMgNDYgOTYuMTIgNTMuMDUgOTEuMDggNjUuNjkgODQuNjkgNjUuNjlaIi8+PC9zdmc+"
+  }
+}

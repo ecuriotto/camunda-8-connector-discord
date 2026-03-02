@@ -8,4 +8,5 @@ package io.camunda.connector.discord.model.response;
  * @param userId  the target user ID
  * @param roleId  the role ID that was added or removed
  */
-public record RoleResponse(boolean success, String action, String userId, String roleId) {}
+public record RoleResponse(boolean success, String action, String userId, String roleId) {
+}

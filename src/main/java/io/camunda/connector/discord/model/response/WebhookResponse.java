@@ -5,4 +5,5 @@ package io.camunda.connector.discord.model.response;
  *
  * @param success whether the webhook message was sent successfully
  */
-public record WebhookResponse(boolean success) {}
+public record WebhookResponse(boolean success) {
+}

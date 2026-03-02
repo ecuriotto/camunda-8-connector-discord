@@ -28,236 +28,240 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SendMessageTest {
 
-  private static final String CHANNEL_ID = "123456789";
-  private static final String BOT_TOKEN = "test-bot-token";
-  private static final String MESSAGE_ID = "987654321";
-  private static final String TIMESTAMP = "2026-03-02T12:00:00.000000+00:00";
+    private static final String CHANNEL_ID = "123456789";
+    private static final String BOT_TOKEN = "test-bot-token";
+    private static final String MESSAGE_ID = "987654321";
+    private static final String TIMESTAMP = "2026-03-02T12:00:00.000000+00:00";
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  @Mock private DiscordApiClient apiClient;
+    @Mock
+    private DiscordApiClient apiClient;
 
-  private DiscordConnector connector;
+    private DiscordConnector connector;
 
-  @BeforeEach
-  void setUp() {
-    connector = new DiscordConnector(apiClient);
-  }
-
-  private void stubObjectMapper() {
-    when(apiClient.getObjectMapper()).thenReturn(MAPPER);
-  }
-
-  private ObjectNode successResponse() {
-    ObjectNode node = MAPPER.createObjectNode();
-    node.put("id", MESSAGE_ID);
-    node.put("channel_id", CHANNEL_ID);
-    node.put("timestamp", TIMESTAMP);
-    return node;
-  }
-
-  // ---- Success scenarios ----
-
-  @Nested
-  @DisplayName("Successful message sending")
-  class SuccessTests {
-
-    @Test
-    @DisplayName("Should send message with content only")
-    void shouldSendMessageWithContentOnly() {
-      stubObjectMapper();
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello Discord!", null, BOT_TOKEN);
-      when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(), eq(BOT_TOKEN)))
-          .thenReturn(successResponse());
-
-      MessageResponse result = connector.sendMessage(request);
-
-      assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
-      assertThat(result.channelId()).isEqualTo(CHANNEL_ID);
-      assertThat(result.timestamp()).isEqualTo(TIMESTAMP);
+    @BeforeEach
+    void setUp() {
+        connector = new DiscordConnector(apiClient);
     }
 
-    @Test
-    @DisplayName("Should send message with embeds only")
-    void shouldSendMessageWithEmbedsOnly() {
-      stubObjectMapper();
-      var embeds = List.of(Map.of("title", "Test Embed", "description", "A test embed"));
-      var request = new SendMessageRequest(CHANNEL_ID, null, embeds, BOT_TOKEN);
-      when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(), eq(BOT_TOKEN)))
-          .thenReturn(successResponse());
-
-      MessageResponse result = connector.sendMessage(request);
-
-      assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
-      assertThat(result.channelId()).isEqualTo(CHANNEL_ID);
+    private void stubObjectMapper() {
+        when(apiClient.getObjectMapper()).thenReturn(MAPPER);
     }
 
-    @Test
-    @DisplayName("Should send message with both content and embeds")
-    void shouldSendMessageWithContentAndEmbeds() {
-      stubObjectMapper();
-      var embeds = List.of(Map.of("title", "Embed"));
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello!", embeds, BOT_TOKEN);
-      when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(), eq(BOT_TOKEN)))
-          .thenReturn(successResponse());
-
-      MessageResponse result = connector.sendMessage(request);
-
-      assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
-    }
-  }
-
-  // ---- Validation scenarios ----
-
-  @Nested
-  @DisplayName("Input validation")
-  class ValidationTests {
-
-    @Test
-    @DisplayName("Should reject request when both content and embeds are null")
-    void shouldRejectWhenBothContentAndEmbedsNull() {
-      var request = new SendMessageRequest(CHANNEL_ID, null, null, BOT_TOKEN);
-
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("content")
-          .hasMessageContaining("embeds");
+    private ObjectNode successResponse() {
+        ObjectNode node = MAPPER.createObjectNode();
+        node.put("id", MESSAGE_ID);
+        node.put("channel_id", CHANNEL_ID);
+        node.put("timestamp", TIMESTAMP);
+        return node;
     }
 
-    @Test
-    @DisplayName("Should reject request when content is blank and embeds is null")
-    void shouldRejectWhenContentBlankAndEmbedsNull() {
-      var request = new SendMessageRequest(CHANNEL_ID, "   ", null, BOT_TOKEN);
+    // ---- Success scenarios ----
 
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(IllegalArgumentException.class);
-    }
-  }
+    @Nested
+    @DisplayName("Successful message sending")
+    class SuccessTests {
 
-  // ---- Error scenarios ----
+        @Test
+        @DisplayName("Should send message with content only")
+        void shouldSendMessageWithContentOnly() {
+            stubObjectMapper();
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello Discord!", null, BOT_TOKEN);
+            when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(),
+                    eq(BOT_TOKEN)))
+                    .thenReturn(successResponse());
 
-  @Nested
-  @DisplayName("Error handling")
-  class ErrorTests {
+            MessageResponse result = connector.sendMessage(request);
 
-    @Test
-    @DisplayName("Should map NOT_FOUND to CHANNEL_NOT_FOUND")
-    void shouldMapNotFoundToChannelNotFound() {
-      stubObjectMapper();
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
-      when(apiClient.sendBotRequest(any(), any(), any(), any()))
-          .thenThrow(new ConnectorException("NOT_FOUND", "Discord resource not found"));
+            assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
+            assertThat(result.channelId()).isEqualTo(CHANNEL_ID);
+            assertThat(result.timestamp()).isEqualTo(TIMESTAMP);
+        }
 
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(ConnectorException.class)
-          .satisfies(ex -> {
-            ConnectorException ce = (ConnectorException) ex;
-            assertThat(ce.getErrorCode()).isEqualTo("CHANNEL_NOT_FOUND");
-            assertThat(ce.getMessage()).contains(CHANNEL_ID);
-          });
-    }
+        @Test
+        @DisplayName("Should send message with embeds only")
+        void shouldSendMessageWithEmbedsOnly() {
+            stubObjectMapper();
+            var embeds = List.of(Map.of("title", "Test Embed", "description", "A test embed"));
+            var request = new SendMessageRequest(CHANNEL_ID, null, embeds, BOT_TOKEN);
+            when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(),
+                    eq(BOT_TOKEN)))
+                    .thenReturn(successResponse());
 
-    @Test
-    @DisplayName("Should propagate AUTHENTICATION_FAILED error")
-    void shouldPropagateAuthenticationFailed() {
-      stubObjectMapper();
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
-      when(apiClient.sendBotRequest(any(), any(), any(), any()))
-          .thenThrow(new ConnectorException("AUTHENTICATION_FAILED", "Invalid token"));
+            MessageResponse result = connector.sendMessage(request);
 
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(ConnectorException.class)
-          .satisfies(ex -> {
-            ConnectorException ce = (ConnectorException) ex;
-            assertThat(ce.getErrorCode()).isEqualTo("AUTHENTICATION_FAILED");
-          });
-    }
+            assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
+            assertThat(result.channelId()).isEqualTo(CHANNEL_ID);
+        }
 
-    @Test
-    @DisplayName("Should propagate DISCORD_API_ERROR")
-    void shouldPropagateDiscordApiError() {
-      stubObjectMapper();
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
-      when(apiClient.sendBotRequest(any(), any(), any(), any()))
-          .thenThrow(new ConnectorException("DISCORD_API_ERROR", "Internal server error"));
+        @Test
+        @DisplayName("Should send message with both content and embeds")
+        void shouldSendMessageWithContentAndEmbeds() {
+            stubObjectMapper();
+            var embeds = List.of(Map.of("title", "Embed"));
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello!", embeds, BOT_TOKEN);
+            when(apiClient.sendBotRequest(eq("POST"), eq("/channels/" + CHANNEL_ID + "/messages"), any(),
+                    eq(BOT_TOKEN)))
+                    .thenReturn(successResponse());
 
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(ConnectorException.class)
-          .satisfies(ex -> {
-            ConnectorException ce = (ConnectorException) ex;
-            assertThat(ce.getErrorCode()).isEqualTo("DISCORD_API_ERROR");
-          });
+            MessageResponse result = connector.sendMessage(request);
+
+            assertThat(result.messageId()).isEqualTo(MESSAGE_ID);
+        }
     }
 
-    @Test
-    @DisplayName("Should propagate rate limit (429) as retryable exception")
-    void shouldPropagateRateLimitAsRetryable() {
-      stubObjectMapper();
-      var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
-      when(apiClient.sendBotRequest(any(), any(), any(), any()))
-          .thenThrow(new ConnectorRetryExceptionBuilder()
-              .errorCode("RATE_LIMITED")
-              .message("Rate limited")
-              .build());
+    // ---- Validation scenarios ----
 
-      assertThatThrownBy(() -> connector.sendMessage(request))
-          .isInstanceOf(ConnectorRetryException.class);
-    }
-  }
+    @Nested
+    @DisplayName("Input validation")
+    class ValidationTests {
 
-  // ---- Payload building ----
+        @Test
+        @DisplayName("Should reject request when both content and embeds are null")
+        void shouldRejectWhenBothContentAndEmbedsNull() {
+            var request = new SendMessageRequest(CHANNEL_ID, null, null, BOT_TOKEN);
 
-  @Nested
-  @DisplayName("Payload construction")
-  class PayloadTests {
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("content")
+                    .hasMessageContaining("embeds");
+        }
 
-    @Test
-    @DisplayName("Should build payload with content only")
-    void shouldBuildPayloadContentOnly() throws Exception {
-      stubObjectMapper();
-      String payload = connector.buildMessagePayload("Hello", null);
-      JsonNode parsed = MAPPER.readTree(payload);
+        @Test
+        @DisplayName("Should reject request when content is blank and embeds is null")
+        void shouldRejectWhenContentBlankAndEmbedsNull() {
+            var request = new SendMessageRequest(CHANNEL_ID, "   ", null, BOT_TOKEN);
 
-      assertThat(parsed.has("content")).isTrue();
-      assertThat(parsed.get("content").asText()).isEqualTo("Hello");
-      assertThat(parsed.has("embeds")).isFalse();
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Should build payload with embeds only")
-    void shouldBuildPayloadEmbedsOnly() throws Exception {
-      stubObjectMapper();
-      var embeds = List.of(Map.of("title", "Test"));
-      String payload = connector.buildMessagePayload(null, embeds);
-      JsonNode parsed = MAPPER.readTree(payload);
+    // ---- Error scenarios ----
 
-      assertThat(parsed.has("content")).isFalse();
-      assertThat(parsed.has("embeds")).isTrue();
-      assertThat(parsed.get("embeds").isArray()).isTrue();
+    @Nested
+    @DisplayName("Error handling")
+    class ErrorTests {
+
+        @Test
+        @DisplayName("Should map NOT_FOUND to CHANNEL_NOT_FOUND")
+        void shouldMapNotFoundToChannelNotFound() {
+            stubObjectMapper();
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
+            when(apiClient.sendBotRequest(any(), any(), any(), any()))
+                    .thenThrow(new ConnectorException("NOT_FOUND", "Discord resource not found"));
+
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(ConnectorException.class)
+                    .satisfies(ex -> {
+                        ConnectorException ce = (ConnectorException) ex;
+                        assertThat(ce.getErrorCode()).isEqualTo("CHANNEL_NOT_FOUND");
+                        assertThat(ce.getMessage()).contains(CHANNEL_ID);
+                    });
+        }
+
+        @Test
+        @DisplayName("Should propagate AUTHENTICATION_FAILED error")
+        void shouldPropagateAuthenticationFailed() {
+            stubObjectMapper();
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
+            when(apiClient.sendBotRequest(any(), any(), any(), any()))
+                    .thenThrow(new ConnectorException("AUTHENTICATION_FAILED", "Invalid token"));
+
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(ConnectorException.class)
+                    .satisfies(ex -> {
+                        ConnectorException ce = (ConnectorException) ex;
+                        assertThat(ce.getErrorCode()).isEqualTo("AUTHENTICATION_FAILED");
+                    });
+        }
+
+        @Test
+        @DisplayName("Should propagate DISCORD_API_ERROR")
+        void shouldPropagateDiscordApiError() {
+            stubObjectMapper();
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
+            when(apiClient.sendBotRequest(any(), any(), any(), any()))
+                    .thenThrow(new ConnectorException("DISCORD_API_ERROR", "Internal server error"));
+
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(ConnectorException.class)
+                    .satisfies(ex -> {
+                        ConnectorException ce = (ConnectorException) ex;
+                        assertThat(ce.getErrorCode()).isEqualTo("DISCORD_API_ERROR");
+                    });
+        }
+
+        @Test
+        @DisplayName("Should propagate rate limit (429) as retryable exception")
+        void shouldPropagateRateLimitAsRetryable() {
+            stubObjectMapper();
+            var request = new SendMessageRequest(CHANNEL_ID, "Hello", null, BOT_TOKEN);
+            when(apiClient.sendBotRequest(any(), any(), any(), any()))
+                    .thenThrow(new ConnectorRetryExceptionBuilder()
+                            .errorCode("RATE_LIMITED")
+                            .message("Rate limited")
+                            .build());
+
+            assertThatThrownBy(() -> connector.sendMessage(request))
+                    .isInstanceOf(ConnectorRetryException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Should build payload with both content and embeds")
-    void shouldBuildPayloadBoth() throws Exception {
-      stubObjectMapper();
-      var embeds = List.of(Map.of("title", "Embed"));
-      String payload = connector.buildMessagePayload("Hello", embeds);
-      JsonNode parsed = MAPPER.readTree(payload);
+    // ---- Payload building ----
 
-      assertThat(parsed.has("content")).isTrue();
-      assertThat(parsed.has("embeds")).isTrue();
+    @Nested
+    @DisplayName("Payload construction")
+    class PayloadTests {
+
+        @Test
+        @DisplayName("Should build payload with content only")
+        void shouldBuildPayloadContentOnly() throws Exception {
+            stubObjectMapper();
+            String payload = connector.buildMessagePayload("Hello", null);
+            JsonNode parsed = MAPPER.readTree(payload);
+
+            assertThat(parsed.has("content")).isTrue();
+            assertThat(parsed.get("content").asText()).isEqualTo("Hello");
+            assertThat(parsed.has("embeds")).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should build payload with embeds only")
+        void shouldBuildPayloadEmbedsOnly() throws Exception {
+            stubObjectMapper();
+            var embeds = List.of(Map.of("title", "Test"));
+            String payload = connector.buildMessagePayload(null, embeds);
+            JsonNode parsed = MAPPER.readTree(payload);
+
+            assertThat(parsed.has("content")).isFalse();
+            assertThat(parsed.has("embeds")).isTrue();
+            assertThat(parsed.get("embeds").isArray()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should build payload with both content and embeds")
+        void shouldBuildPayloadBoth() throws Exception {
+            stubObjectMapper();
+            var embeds = List.of(Map.of("title", "Embed"));
+            String payload = connector.buildMessagePayload("Hello", embeds);
+            JsonNode parsed = MAPPER.readTree(payload);
+
+            assertThat(parsed.has("content")).isTrue();
+            assertThat(parsed.has("embeds")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should exclude blank content from payload")
+        void shouldExcludeBlankContent() throws Exception {
+            stubObjectMapper();
+            var embeds = List.of(Map.of("title", "Test"));
+            String payload = connector.buildMessagePayload("   ", embeds);
+            JsonNode parsed = MAPPER.readTree(payload);
+
+            assertThat(parsed.has("content")).isFalse();
+            assertThat(parsed.has("embeds")).isTrue();
+        }
     }
-
-    @Test
-    @DisplayName("Should exclude blank content from payload")
-    void shouldExcludeBlankContent() throws Exception {
-      stubObjectMapper();
-      var embeds = List.of(Map.of("title", "Test"));
-      String payload = connector.buildMessagePayload("   ", embeds);
-      JsonNode parsed = MAPPER.readTree(payload);
-
-      assertThat(parsed.has("content")).isFalse();
-      assertThat(parsed.has("embeds")).isTrue();
-    }
-  }
 }

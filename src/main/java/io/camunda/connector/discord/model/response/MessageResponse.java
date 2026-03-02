@@ -7,4 +7,5 @@ package io.camunda.connector.discord.model.response;
  * @param channelId the ID of the channel the message was sent to
  * @param timestamp the ISO-8601 timestamp of the created message
  */
-public record MessageResponse(String messageId, String channelId, String timestamp) {}
+public record MessageResponse(String messageId, String channelId, String timestamp) {
+}
