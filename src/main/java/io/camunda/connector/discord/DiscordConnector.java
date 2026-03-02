@@ -10,7 +10,9 @@ import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.discord.client.DiscordApiClient;
 import io.camunda.connector.discord.model.request.SendMessageRequest;
+import io.camunda.connector.discord.model.request.SendWebhookMessageRequest;
 import io.camunda.connector.discord.model.response.MessageResponse;
+import io.camunda.connector.discord.model.response.WebhookResponse;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
 import io.camunda.connector.generator.java.annotation.ElementTemplate.PropertyGroup;
 import java.util.LinkedHashMap;
@@ -82,6 +84,35 @@ public class DiscordConnector implements OutboundConnectorProvider {
   // ---- Payload helpers ----
 
   /**
+   * Sends a message to a Discord channel via a webhook URL.
+   *
+   * @param request the webhook input containing webhookUrl, content/embeds, and optional overrides
+   * @return a {@link WebhookResponse} indicating success
+   * @throws ConnectorException on validation failure or Discord API errors
+   */
+  @Operation(id = "sendWebhookMessage", name = "Send webhook message", description = "Send a message via a Discord webhook URL")
+  public WebhookResponse sendWebhookMessage(@Variable SendWebhookMessageRequest request) {
+    request.validate();
+
+    String payload = buildWebhookPayload(request);
+
+    LOGGER.info("Sending webhook message");
+
+    try {
+      apiClient.sendWebhookRequest(request.webhookUrl(), payload);
+      return new WebhookResponse(true);
+    } catch (ConnectorException e) {
+      if ("NOT_FOUND".equals(e.getErrorCode())) {
+        throw new ConnectorException("INVALID_WEBHOOK_URL",
+            "Discord webhook URL is invalid or expired", e);
+      }
+      throw e;
+    }
+  }
+
+  // ---- Payload builders ----
+
+  /**
    * Builds a JSON payload for Discord message endpoints.
    *
    * @param content plain text content (may be null)
@@ -102,6 +133,37 @@ public class DiscordConnector implements OutboundConnectorProvider {
     } catch (JsonProcessingException e) {
       throw new ConnectorException("DISCORD_API_ERROR",
           "Failed to serialize message payload: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Builds a JSON payload for Discord webhook endpoints.
+   *
+   * <p>Includes optional {@code username} and {@code avatar_url} overrides.
+   *
+   * @param request the webhook message request
+   * @return JSON string
+   */
+  String buildWebhookPayload(SendWebhookMessageRequest request) {
+    ObjectMapper mapper = apiClient.getObjectMapper();
+    Map<String, Object> payload = new LinkedHashMap<>();
+    if (request.content() != null && !request.content().isBlank()) {
+      payload.put("content", request.content());
+    }
+    if (request.embeds() != null) {
+      payload.put("embeds", request.embeds());
+    }
+    if (request.username() != null && !request.username().isBlank()) {
+      payload.put("username", request.username());
+    }
+    if (request.avatarUrl() != null && !request.avatarUrl().isBlank()) {
+      payload.put("avatar_url", request.avatarUrl());
+    }
+    try {
+      return mapper.writeValueAsString(payload);
+    } catch (JsonProcessingException e) {
+      throw new ConnectorException("DISCORD_API_ERROR",
+          "Failed to serialize webhook payload: " + e.getMessage(), e);
     }
   }
 }
