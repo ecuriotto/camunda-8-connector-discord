@@ -3,10 +3,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <name>connector-template</name>
-  <description>Camunda Connector Template</description>
+  <name>Discord Connector</name>
+  <description>Camunda 8 Connector for Discord</description>
   <groupId>io.camunda.connector</groupId>
-  <artifactId>connector-template</artifactId>
+  <artifactId>connector-discord</artifactId>
   <packaging>jar</packaging>
   <version>0.1.0-SNAPSHOT</version>
 
@@ -134,11 +134,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.MyConnector</connectorClass>
+              <connectorClass>io.camunda.connector.discord.DiscordConnector</connectorClass>
               <files>
                 <file>
-                  <templateId>io.camunda.example.template.v1</templateId>
-                  <templateFileName>my-connector.json</templateFileName>
+                  <templateId>io.camunda.connector.discord.v1</templateId>
+                  <templateFileName>discord-connector.json</templateFileName>
                 </file>
               </files>
             </connector>
