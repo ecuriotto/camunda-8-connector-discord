@@ -10,10 +10,12 @@ import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.discord.client.DiscordApiClient;
 import io.camunda.connector.discord.model.request.CreateChannelRequest;
+import io.camunda.connector.discord.model.request.ManageRolesRequest;
 import io.camunda.connector.discord.model.request.SendMessageRequest;
 import io.camunda.connector.discord.model.request.SendWebhookMessageRequest;
 import io.camunda.connector.discord.model.response.ChannelResponse;
 import io.camunda.connector.discord.model.response.MessageResponse;
+import io.camunda.connector.discord.model.response.RoleResponse;
 import io.camunda.connector.discord.model.response.WebhookResponse;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
 import io.camunda.connector.generator.java.annotation.ElementTemplate.PropertyGroup;
@@ -141,6 +143,41 @@ public class DiscordConnector implements OutboundConnectorProvider {
           && e.getMessage() != null && e.getMessage().contains("403")) {
         throw new ConnectorException("MISSING_PERMISSIONS",
             "Bot lacks permissions to create channels in guild: " + request.guildId(), e);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Adds or removes a role from a guild member.
+   *
+   * @param request the manage-roles input containing guildId, userId, roleId, action, and botToken
+   * @return a {@link RoleResponse} indicating the result
+   * @throws ConnectorException on validation failure or Discord API errors
+   */
+  @Operation(id = "manageRoles", name = "Manage roles", description = "Add or remove a role from a Discord guild member")
+  public RoleResponse manageRoles(@Variable ManageRolesRequest request) {
+    String action = request.action() != null ? request.action() : "Add";
+    String method = "Add".equalsIgnoreCase(action) ? "PUT" : "DELETE";
+    String endpoint = "/guilds/" + request.guildId()
+        + "/members/" + request.userId()
+        + "/roles/" + request.roleId();
+
+    LOGGER.info("{} role {} for user {} in guild {}", action, request.roleId(),
+        request.userId(), request.guildId());
+
+    try {
+      apiClient.sendBotRequest(method, endpoint, null, request.botToken());
+      return new RoleResponse(true, action, request.userId(), request.roleId());
+    } catch (ConnectorException e) {
+      if ("NOT_FOUND".equals(e.getErrorCode())) {
+        throw new ConnectorException("MEMBER_OR_ROLE_NOT_FOUND",
+            "Member or role not found in guild " + request.guildId(), e);
+      }
+      if ("AUTHENTICATION_FAILED".equals(e.getErrorCode())
+          && e.getMessage() != null && e.getMessage().contains("403")) {
+        throw new ConnectorException("MISSING_PERMISSIONS",
+            "Bot lacks permissions to manage roles in guild: " + request.guildId(), e);
       }
       throw e;
     }
