@@ -9,8 +9,10 @@ import io.camunda.connector.api.annotation.Variable;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.discord.client.DiscordApiClient;
+import io.camunda.connector.discord.model.request.CreateChannelRequest;
 import io.camunda.connector.discord.model.request.SendMessageRequest;
 import io.camunda.connector.discord.model.request.SendWebhookMessageRequest;
+import io.camunda.connector.discord.model.response.ChannelResponse;
 import io.camunda.connector.discord.model.response.MessageResponse;
 import io.camunda.connector.discord.model.response.WebhookResponse;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
@@ -110,6 +112,40 @@ public class DiscordConnector implements OutboundConnectorProvider {
     }
   }
 
+  /**
+   * Creates a new channel in a Discord guild.
+   *
+   * @param request the create-channel input containing guildId, channelName, type, and botToken
+   * @return a {@link ChannelResponse} with the created channel details
+   * @throws ConnectorException on validation failure or Discord API errors
+   */
+  @Operation(id = "createChannel", name = "Create channel", description = "Create a new channel in a Discord guild")
+  public ChannelResponse createChannel(@Variable CreateChannelRequest request) {
+    String endpoint = "/guilds/" + request.guildId() + "/channels";
+    String payload = buildChannelPayload(request);
+
+    LOGGER.info("Creating channel '{}' in guild {}", request.channelName(), request.guildId());
+
+    try {
+      JsonNode response = apiClient.sendBotRequest("POST", endpoint, payload, request.botToken());
+      return new ChannelResponse(
+          response.path("id").asText(),
+          response.path("name").asText(),
+          response.path("type").asInt());
+    } catch (ConnectorException e) {
+      if ("NOT_FOUND".equals(e.getErrorCode())) {
+        throw new ConnectorException("GUILD_NOT_FOUND",
+            "Discord guild not found: " + request.guildId(), e);
+      }
+      if ("AUTHENTICATION_FAILED".equals(e.getErrorCode())
+          && e.getMessage() != null && e.getMessage().contains("403")) {
+        throw new ConnectorException("MISSING_PERMISSIONS",
+            "Bot lacks permissions to create channels in guild: " + request.guildId(), e);
+      }
+      throw e;
+    }
+  }
+
   // ---- Payload builders ----
 
   /**
@@ -164,6 +200,28 @@ public class DiscordConnector implements OutboundConnectorProvider {
     } catch (JsonProcessingException e) {
       throw new ConnectorException("DISCORD_API_ERROR",
           "Failed to serialize webhook payload: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Builds a JSON payload for Discord channel creation.
+   *
+   * @param request the create-channel request
+   * @return JSON string with {@code name}, {@code type}, and optional {@code topic}
+   */
+  String buildChannelPayload(CreateChannelRequest request) {
+    ObjectMapper mapper = apiClient.getObjectMapper();
+    Map<String, Object> payload = new LinkedHashMap<>();
+    payload.put("name", request.channelName());
+    payload.put("type", request.channelTypeAsInt());
+    if (request.topic() != null && !request.topic().isBlank()) {
+      payload.put("topic", request.topic());
+    }
+    try {
+      return mapper.writeValueAsString(payload);
+    } catch (JsonProcessingException e) {
+      throw new ConnectorException("DISCORD_API_ERROR",
+          "Failed to serialize channel payload: " + e.getMessage(), e);
     }
   }
 }
