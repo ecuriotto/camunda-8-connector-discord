@@ -79,8 +79,6 @@ public class DiscordConnector implements OutboundConnectorProvider {
         }
     }
 
-    // ---- Payload helpers ----
-
     /**
      * Sends a message to a Discord channel via a webhook URL.
      *

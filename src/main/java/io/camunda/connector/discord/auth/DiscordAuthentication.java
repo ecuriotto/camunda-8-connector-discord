@@ -2,7 +2,6 @@ package io.camunda.connector.discord.auth;
 
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
 import io.camunda.connector.generator.java.annotation.TemplateProperty.PropertyType;
-import jakarta.validation.constraints.NotEmpty;
 
 /**
  * Authentication model for Discord API access.

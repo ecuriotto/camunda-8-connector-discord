@@ -63,5 +63,8 @@ build/
 .env
 request*.json
 
+# Local test properties (contains secrets)
+src/test/resources/application.properties
+
 element-templates/.DS_Store
 .DS_Store

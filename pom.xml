@@ -20,9 +20,6 @@
     <version.junit-jupiter>6.0.2</version.junit-jupiter>
     <version.awaitility>4.2.0</version.awaitility>
     <version.mockito>5.21.0</version.mockito>
-    <java.version>21</java.version>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
   </properties>
 
   <dependencies>
