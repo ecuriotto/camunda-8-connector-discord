@@ -28,6 +28,10 @@ hs_err_pid*
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
+
+# Local runtime config and secrets — copy from *.example and fill in your values
+src/test/resources/application.properties
+run-local.sh
 !**/src/main/**/target/
 !**/src/test/**/target/
 

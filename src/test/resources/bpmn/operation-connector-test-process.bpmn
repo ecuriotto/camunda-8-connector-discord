@@ -4,7 +4,7 @@
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:outgoing>Flow_1fhp9db</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="DiscordConnector" name="Discord Connector" zeebe:modelerTemplate="io.camunda.connector.discord.v1" zeebe:modelerTemplateVersion="1">
+    <bpmn:serviceTask id="DiscordConnector" name="Discord Outbound Connector" zeebe:modelerTemplate="io.camunda.connector.discord.v1" zeebe:modelerTemplateVersion="2">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.camunda:discord:1" retries="3" />
         <zeebe:taskHeaders>

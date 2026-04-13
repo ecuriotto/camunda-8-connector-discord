@@ -1,4 +1,4 @@
-# Camunda 8 Discord Connector
+# Camunda 8 Discord Outbound Connector
 
 A [Camunda 8 Outbound Connector](https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/) that integrates Discord into BPMN processes. Send messages, manage channels, and control roles directly from your process diagrams.
 
@@ -123,8 +123,14 @@ The generated element template is located at [`element-templates/discord-connect
 ### Local Development
 
 1. Start a local Camunda environment (e.g., via [Docker Compose](https://github.com/camunda/camunda-distributions))
-2. Run `io.camunda.connector.discord.LocalConnectorRuntime` from the test sources
-3. Add the element template to your Modeler configuration
+2. Copy `src/test/resources/application.properties.example` to `src/test/resources/application.properties` and fill in your Camunda cluster credentials
+3. Copy `run-local.sh.example` or create `run-local.sh` from the template, fill in your Discord secrets, and run it:
+   ```bash
+   chmod +x run-local.sh
+   ./run-local.sh
+   ```
+   This sets `DISCORD_BOT_TOKEN` and `DISCORD_WEBHOOK_URL` as environment variables and starts the connector runtime.
+4. Add the element template from `element-templates/discord-connector.json` to your Modeler configuration
 
 ## Technology Stack
 

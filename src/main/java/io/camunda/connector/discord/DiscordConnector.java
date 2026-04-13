@@ -24,12 +24,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@OutboundConnector(name = "Discord Connector", type = "io.camunda:discord:1")
-@ElementTemplate(id = "io.camunda.connector.discord.v1", name = "Discord Connector", version = 1, description = "Send messages and manage channels in Discord", icon = "icon.svg", documentationRef = "https://github.com/camunda/camunda-8-connector-discord", propertyGroups = {
+@OutboundConnector(name = "Discord Outbound Connector", type = "io.camunda:discord:1")
+@ElementTemplate(id = "io.camunda.connector.discord.v1", name = "Discord Outbound Connector", version = 2, description = "Send messages and manage channels in Discord", icon = "icon.svg", documentationRef = "https://github.com/camunda/camunda-8-connector-discord", propertyGroups = {
+        @PropertyGroup(id = "operation", label = "Operation"),
         @PropertyGroup(id = "authentication", label = "Authentication"),
         @PropertyGroup(id = "message", label = "Message"),
         @PropertyGroup(id = "channel", label = "Channel"),
-        @PropertyGroup(id = "role", label = "Role Management")
+        @PropertyGroup(id = "role", label = "Role management")
 })
 public class DiscordConnector implements OutboundConnectorProvider {
 

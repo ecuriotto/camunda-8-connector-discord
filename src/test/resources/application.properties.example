@@ -1,0 +1,11 @@
+camunda.client.mode=saas
+camunda.client.auth.client-id=YOUR_CLIENT_ID
+camunda.client.auth.client-secret=YOUR_CLIENT_SECRET
+camunda.client.cloud.cluster-id=YOUR_CLUSTER_ID
+camunda.client.cloud.region=YOUR_REGION
+
+# Increase timeouts for high-latency SaaS connections if needed
+# camunda.client.worker.defaults.request-timeout=60000
+
+# Local secrets: set via environment variables (e.g. export DISCORD_BOT_TOKEN=...)
+camunda.connector.secretprovider.environment.prefix=

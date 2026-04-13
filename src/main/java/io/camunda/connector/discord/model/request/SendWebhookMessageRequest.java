@@ -1,6 +1,7 @@
 package io.camunda.connector.discord.model.request;
 
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
+import io.camunda.connector.generator.dsl.Property.FeelMode;
 import io.camunda.connector.generator.java.annotation.TemplateProperty.PropertyType;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -20,13 +21,13 @@ import jakarta.validation.constraints.NotEmpty;
 public record SendWebhookMessageRequest(
         @NotEmpty @TemplateProperty(group = "authentication", label = "Webhook URL", description = "Discord webhook URL. Use {{secrets.DISCORD_WEBHOOK_URL}}.") String webhookUrl,
 
-        @TemplateProperty(group = "message", label = "Message Content", description = "Plain text message content. At least one of content or embeds must be provided.", optional = true) String content,
+        @TemplateProperty(group = "message", label = "Message content", description = "Plain text message content. At least one of content or embeds must be provided.", optional = true) String content,
 
         @TemplateProperty(group = "message", label = "Username", description = "Override the webhook's default username (optional).", optional = true) String username,
 
         @TemplateProperty(group = "message", label = "Avatar URL", description = "Override the webhook's default avatar (optional).", optional = true) String avatarUrl,
 
-        @TemplateProperty(group = "message", label = "Embeds", description = "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.", optional = true, type = PropertyType.Text) Object embeds) {
+        @TemplateProperty(group = "message", label = "Embeds", description = "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.", optional = true, type = PropertyType.Text, feel = FeelMode.required) Object embeds) {
 
     /**
      * Validates that at least one of {@code content} or {@code embeds} is provided.

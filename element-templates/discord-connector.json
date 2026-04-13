@@ -1,13 +1,13 @@
 {
   "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name" : "Discord Connector",
+  "name" : "Discord Outbound Connector",
   "id" : "io.camunda.connector.discord.v1",
   "description" : "Send messages and manage channels in Discord",
   "metadata" : {
     "keywords" : [ ]
   },
   "documentationRef" : "https://github.com/camunda/camunda-8-connector-discord",
-  "version" : 1,
+  "version" : 2,
   "category" : {
     "id" : "connectors",
     "name" : "Connectors"
@@ -17,6 +17,9 @@
     "value" : "bpmn:ServiceTask"
   },
   "groups" : [ {
+    "id" : "operation",
+    "label" : "Operation"
+  }, {
     "id" : "authentication",
     "label" : "Authentication"
   }, {
@@ -27,10 +30,7 @@
     "label" : "Channel"
   }, {
     "id" : "role",
-    "label" : "Role Management"
-  }, {
-    "id" : "operation",
-    "label" : "Operation"
+    "label" : "Role management"
   }, {
     "id" : "connector",
     "label" : "Connector"
@@ -52,8 +52,32 @@
     },
     "type" : "Hidden"
   }, {
+    "id" : "operation",
+    "label" : "Operation",
+    "description" : "The operation to execute",
+    "value" : "createChannel",
+    "group" : "operation",
+    "binding" : {
+      "key" : "operation",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Dropdown",
+    "choices" : [ {
+      "name" : "Create channel",
+      "value" : "createChannel"
+    }, {
+      "name" : "Manage roles",
+      "value" : "manageRoles"
+    }, {
+      "name" : "Send message",
+      "value" : "sendMessage"
+    }, {
+      "name" : "Send webhook message",
+      "value" : "sendWebhookMessage"
+    } ]
+  }, {
     "id" : "createChannel:botToken",
-    "label" : "Bot Token",
+    "label" : "Bot token",
     "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
     "optional" : false,
     "constraints" : {
@@ -75,7 +99,7 @@
     "type" : "String"
   }, {
     "id" : "manageRoles:botToken",
-    "label" : "Bot Token",
+    "label" : "Bot token",
     "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
     "optional" : false,
     "constraints" : {
@@ -97,7 +121,7 @@
     "type" : "String"
   }, {
     "id" : "sendMessage:botToken",
-    "label" : "Bot Token",
+    "label" : "Bot token",
     "description" : "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.",
     "optional" : false,
     "constraints" : {
@@ -163,7 +187,7 @@
     "type" : "String"
   }, {
     "id" : "sendMessage:content",
-    "label" : "Message Content",
+    "label" : "Message content",
     "description" : "Plain text message content. At least one of content or embeds must be provided.",
     "optional" : true,
     "feel" : "optional",
@@ -185,7 +209,7 @@
     "label" : "Embeds",
     "description" : "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.",
     "optional" : true,
-    "feel" : "optional",
+    "feel" : "required",
     "group" : "message",
     "binding" : {
       "name" : "embeds",
@@ -201,7 +225,7 @@
     "type" : "Text"
   }, {
     "id" : "sendWebhookMessage:content",
-    "label" : "Message Content",
+    "label" : "Message content",
     "description" : "Plain text message content. At least one of content or embeds must be provided.",
     "optional" : true,
     "feel" : "optional",
@@ -261,7 +285,7 @@
     "label" : "Embeds",
     "description" : "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.",
     "optional" : true,
-    "feel" : "optional",
+    "feel" : "required",
     "group" : "message",
     "binding" : {
       "name" : "embeds",
@@ -299,7 +323,7 @@
     "type" : "String"
   }, {
     "id" : "createChannel:channelName",
-    "label" : "Channel Name",
+    "label" : "Channel name",
     "description" : "Name for the new channel",
     "optional" : false,
     "constraints" : {
@@ -321,7 +345,7 @@
     "type" : "String"
   }, {
     "id" : "createChannel:channelType",
-    "label" : "Channel Type",
+    "label" : "Channel type",
     "description" : "The type of channel to create",
     "optional" : false,
     "value" : "0",
@@ -460,34 +484,10 @@
       "value" : "Remove"
     } ]
   }, {
-    "id" : "operation",
-    "label" : "Operation",
-    "description" : "The operation to execute",
-    "value" : "createChannel",
-    "group" : "operation",
-    "binding" : {
-      "key" : "operation",
-      "type" : "zeebe:taskHeader"
-    },
-    "type" : "Dropdown",
-    "choices" : [ {
-      "name" : "Create channel",
-      "value" : "createChannel"
-    }, {
-      "name" : "Manage roles",
-      "value" : "manageRoles"
-    }, {
-      "name" : "Send message",
-      "value" : "sendMessage"
-    }, {
-      "name" : "Send webhook message",
-      "value" : "sendWebhookMessage"
-    } ]
-  }, {
     "id" : "version",
     "label" : "Version",
     "description" : "Version of the element template",
-    "value" : "1",
+    "value" : "2",
     "group" : "connector",
     "binding" : {
       "key" : "elementTemplateVersion",

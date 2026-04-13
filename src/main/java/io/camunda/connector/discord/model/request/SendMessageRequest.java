@@ -1,6 +1,7 @@
 package io.camunda.connector.discord.model.request;
 
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
+import io.camunda.connector.generator.dsl.Property.FeelMode;
 import io.camunda.connector.generator.java.annotation.TemplateProperty.PropertyType;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -19,11 +20,11 @@ import jakarta.validation.constraints.NotEmpty;
 public record SendMessageRequest(
         @NotEmpty @TemplateProperty(group = "message", label = "Channel ID", description = "The ID of the Discord channel to send the message to") String channelId,
 
-        @TemplateProperty(group = "message", label = "Message Content", description = "Plain text message content. At least one of content or embeds must be provided.", optional = true) String content,
+        @TemplateProperty(group = "message", label = "Message content", description = "Plain text message content. At least one of content or embeds must be provided.", optional = true) String content,
 
-        @TemplateProperty(group = "message", label = "Embeds", description = "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.", optional = true, type = PropertyType.Text) Object embeds,
+        @TemplateProperty(group = "message", label = "Embeds", description = "Array of embed objects (as FEEL expression or JSON). At least one of content or embeds must be provided.", optional = true, type = PropertyType.Text, feel = FeelMode.required) Object embeds,
 
-        @NotEmpty @TemplateProperty(group = "authentication", label = "Bot Token", description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.") String botToken) {
+        @NotEmpty @TemplateProperty(group = "authentication", label = "Bot token", description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.") String botToken) {
 
     /**
      * Validates that at least one of {@code content} or {@code embeds} is provided.

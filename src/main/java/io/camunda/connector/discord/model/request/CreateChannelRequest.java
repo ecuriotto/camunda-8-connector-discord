@@ -20,9 +20,9 @@ import jakarta.validation.constraints.NotEmpty;
 public record CreateChannelRequest(
         @NotEmpty @TemplateProperty(group = "channel", label = "Guild ID", description = "The ID of the Discord guild (server) to create the channel in") String guildId,
 
-        @NotEmpty @TemplateProperty(group = "channel", label = "Channel Name", description = "Name for the new channel") String channelName,
+        @NotEmpty @TemplateProperty(group = "channel", label = "Channel name", description = "Name for the new channel") String channelName,
 
-        @TemplateProperty(group = "channel", label = "Channel Type", description = "The type of channel to create", type = PropertyType.Dropdown, defaultValue = "0", choices = {
+        @TemplateProperty(group = "channel", label = "Channel type", description = "The type of channel to create", type = PropertyType.Dropdown, defaultValue = "0", choices = {
                 @DropdownPropertyChoice(value = "0", label = "Text"),
                 @DropdownPropertyChoice(value = "2", label = "Voice"),
                 @DropdownPropertyChoice(value = "5", label = "Announcement")
@@ -30,7 +30,7 @@ public record CreateChannelRequest(
 
         @TemplateProperty(group = "channel", label = "Topic", description = "Channel topic or description (optional)", optional = true) String topic,
 
-        @NotEmpty @TemplateProperty(group = "authentication", label = "Bot Token", description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.") String botToken) {
+        @NotEmpty @TemplateProperty(group = "authentication", label = "Bot token", description = "Discord bot token for API authentication. Use {{secrets.DISCORD_BOT_TOKEN}}.") String botToken) {
 
     /**
      * Returns the numeric channel type, defaulting to 0 (Text) if not set or
