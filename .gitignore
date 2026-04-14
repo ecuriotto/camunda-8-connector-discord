@@ -32,6 +32,9 @@ target/
 # Local runtime config and secrets — copy from *.example and fill in your values
 src/test/resources/application.properties
 run-local.sh
+
+# Marketplace submission notes (local reference only)
+marketplace-listing.txt
 !**/src/main/**/target/
 !**/src/test/**/target/
 
