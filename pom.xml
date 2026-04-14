@@ -136,7 +136,7 @@
               <files>
                 <file>
                   <templateId>io.camunda.connector.discord.v1</templateId>
-                  <templateFileName>discord-connector.json</templateFileName>
+                  <templateFileName>discord-connector-outbound.json</templateFileName>
                 </file>
               </files>
             </connector>

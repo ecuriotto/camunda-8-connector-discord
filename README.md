@@ -1,5 +1,10 @@
 # Camunda 8 Discord Outbound Connector
 
+[![CI](https://github.com/ecuriotto/camunda-8-connector-discord/actions/workflows/CI.yaml/badge.svg)](https://github.com/ecuriotto/camunda-8-connector-discord/actions/workflows/CI.yaml)
+[![Java 21](https://img.shields.io/badge/Java-21-blue?logo=openjdk)](https://openjdk.org/projects/jdk/21/)
+[![Camunda 8.8+](https://img.shields.io/badge/Camunda-8.8%2B-orange)](https://docs.camunda.io)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](./LICENSE)
+
 A [Camunda 8 Outbound Connector](https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/) that integrates Discord into BPMN processes. Send messages, manage channels, and control roles directly from your process diagrams.
 
 ## Supported Operations
@@ -104,7 +109,7 @@ mvn clean package
 mvn clean verify
 ```
 
-The generated element template is located at [`element-templates/discord-connector.json`](./element-templates/discord-connector.json).
+The generated element template is located at [`element-templates/discord-connector-outbound.json`](./element-templates/discord-connector-outbound.json).
 
 ## Deployment
 
